@@ -1,7 +1,7 @@
 package pucrs.domain;
 
 public class ParticaoMemoria {
-    Status status;
+    public Status status;
 
     public ParticaoMemoria() {
         status = Status.DESALOCADO;

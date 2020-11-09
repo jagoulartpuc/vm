@@ -1,5 +1,8 @@
 package pucrs.components;
 
+import pucrs.domain.ProcessControlBlock;
+import pucrs.queues.FilaDeProntos;
+
 import java.util.concurrent.Semaphore;
 
 public class Scheduler extends Thread {
@@ -8,20 +11,24 @@ public class Scheduler extends Thread {
 
     public void run() {
         while (true) {
-            if (FilaDeProntos.ContarProcessos() != 0) {
-                ProcessControlBlock pcb = FilaDeProntos.DequeueProcess();
+            if (FilaDeProntos.contarProcessos() != 0) {
+                ProcessControlBlock pcb = FilaDeProntos.dequeueProcess();
                 Thread cpuProcess = new Thread(() = > CPU.ExecutarCPU(pcb));
-                Thread.Sleep(2000);
-                cpuProcess.Start();
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                cpuProcess.start();
                 semaforoEscalonador.WaitOne();
                 CPU.semCPU.Release();
             }
         }
     }
 
-    public static void PrintRegistradoresEMemoria(ProcessControlBlock pcb) {
+    public static void printRegistradoresEMemoria(ProcessControlBlock pcb) {
         System.out.println("--------------------------------------------");
-        System.out.println("DADOS DO PROCESSO:" + pcb.ProcessID);
+        System.out.println("DADOS DO PROCESSO:" + pcb.processID);
 
         System.out.println("Valores finais dos registradores:\n");
 
@@ -35,7 +42,7 @@ public class Scheduler extends Thread {
 
         System.out.println("Status finais das posições de memória (não nulas) da particao");
 
-        for (int i = pcb.OffSet; i < pcb.EnderecoLimite; i++) {
+        for (int i = pcb.offSet; i < pcb.enderecoLimite; i++) {
             if (GerenteDeMemoria.Memoria[i] == null) {
                 continue;
             }

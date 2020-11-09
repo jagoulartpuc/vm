@@ -1,42 +1,51 @@
+package pucrs.components;
+
+import pucrs.domain.ParticaoMemoria;
+import pucrs.domain.PosicaoDeMemoria;
+import pucrs.domain.ProcessControlBlock;
+
+import java.io.File;
+
 public class MemoryManager {
-    private const
-    int TAMANHO_MAXIMO_POSICOES_DE_MEMORIA = 1024;
+    private int TAMANHO_MAXIMO_POSICOES_DE_MEMORIA = 1024;
 
-    private const
-    int TAMANHO_MINIMO_PARTICOES_PERMITIDO = 4;
+    private int TAMANHO_MINIMO_PARTICOES_PERMITIDO = 4;
 
-    private const
-    int TAMANHO_MAXIMO_PARTICOES_PERMITIDO = 8;
+    private int TAMANHO_MAXIMO_PARTICOES_PERMITIDO = 8;
 
-    public static ParticaoMemoria[] Particoes
+    public ParticaoMemoria[] particoes;
 
-    {
-        get;
-        set;
+    public ParticaoMemoria[] getParticoes() {
+        return this.particoes;
     }
 
-    public static int NumeroParticoes
+    public int numeroParticoes;
 
-    {
-        get;
-        set;
+    public int getNumeroParticoes() {
+        return this.numeroParticoes;
     }
 
-    private int ParticoesAlocadas
-
-    {
-        get;
-        set;
+    public void setNumeroParticoes(int numeroParticoes) {
+        this.numeroParticoes = numeroParticoes;
     }
 
-    public static PosicaoDeMemoria[] Memoria
+    private int particoesAlocadas;
 
-    {
-        get;
-        set;
+    public int getParticoesAlocadas() {
+        return this.particoesAlocadas;
     }
 
-    public GerenteDeMemoria(int numeroParticoes) {
+    public void setParticoesAlocadas(int particoesAlocadas) {
+        this.particoesAlocadas = particoesAlocadas;
+    }
+
+    public PosicaoDeMemoria[] memoria;
+
+    public PosicaoDeMemoria[] getMemoria() {
+        return this.memoria;
+    }
+
+    public MemoryManager(int numeroParticoes) {
         if (numeroParticoes % 2 != 0) {
             throw new ArgumentException("Não é possivel criar um número impar de partições, use apenas números 2^n. Encerrando execução");
         }
@@ -49,45 +58,45 @@ public class MemoryManager {
             throw new ArgumentException($"O tamanho mínimo de partições permitido para uma CPU é de [{TAMANHO_MINIMO_PARTICOES_PERMITIDO}]. Encerrando execução.");
         }
 
-        NumeroParticoes = numeroParticoes;
-        ParticoesAlocadas = 0;
+        this.numeroParticoes = numeroParticoes;
+        this.particoesAlocadas = 0;
 
-        Particoes = new ParticaoMemoria[numeroParticoes];
-        Memoria = new PosicaoDeMemoria[TAMANHO_MAXIMO_POSICOES_DE_MEMORIA];
+        particoes = new ParticaoMemoria[numeroParticoes];
+        memoria = new PosicaoDeMemoria[TAMANHO_MAXIMO_POSICOES_DE_MEMORIA];
 
         for (int i = 0; i < numeroParticoes; i++) {
-            Particoes[i] = new ParticaoMemoria();
+            particoes[i] = new ParticaoMemoria();
         }
     }
 
-    public bool ParticaoEstaLivre(int particao) {
-        return Particoes[particao].Status == Status.DESALOCADO;
+    public boolean particaoEstaLivre(int particao) {
+        return particoes[particao].status == ParticaoMemoria.Status.DESALOCADO;
     }
 
-    public bool MemoriaCheia() {
-        return Particoes.All(x = > x.Status == Status.ALOCADO);
+    public boolean memoriaCheia() {
+        return particoes.All(x = > x.Status == ParticaoMemoria.Status.ALOCADO);
     }
 
-    public static int CalculaOffset(int particao) {
-        return particao * (Memoria.Length / NumeroParticoes);
+    public int calculaOffset(int particao) {
+        return particao * (memoria.length / numeroParticoes);
     }
 
-    public static int CalculaEnderecoMax(int particao) {
+    public int calculaEnderecoMax(int particao) {
         // Como o array de partiçoes inicia em 0, se nao realizarmos a operação ++ o calculo de boundsRegister ia pegar o endereço mínimo ao invés do máximo,
         // Exemplo, caso nao tivesse esse comando abaixo, na partição 1 (segunda do array) o calculo iria retornar 127, ao invés de 255, que é realmente o endereço maximo dessa
         // partição em específico
         particao++;
 
-        int boundsRegister = particao * (Memoria.Length / NumeroParticoes) - 1;
+        int boundsRegister = particao * (memoria.length / numeroParticoes) - 1;
         return boundsRegister;
     }
 
-    public static int CalculaEnderecoMemoria(ProcessControlBlock pcb, int endereco) {
-        int offset = pcb.OffSet;
+    public static int calculaEnderecoMemoria(ProcessControlBlock pcb, int endereco) {
+        int offset = pcb.offSet;
 
         int enderecoCorrigido = offset + endereco;
 
-        int maximumBound = pcb.EnderecoLimite;
+        int maximumBound = pcb.enderecoLimite;
 
         if (enderecoCorrigido > maximumBound) {
             throw new AcessoIndevidoException($"SEGMENTATION FAULT, o endereço fornecido {enderecoCorrigido} está fora do limite da partição que é {maximumBound}");
@@ -96,15 +105,15 @@ public class MemoryManager {
         return enderecoCorrigido;
     }
 
-    public void ReadFile(string filePath, int particao) {
-        string[] fileContent = File.ReadAllLines(filePath);
+    public void readFile(String filePath, int particao) {
+        String[] fileContent = File.readAllLines(filePath);
 
-        int offsetParticao = CalculaOffset(particao);
+        int offsetParticao = calculaOffset(particao);
 
-        for (int i = 0; i < fileContent.Length; i++) {
-            string[] dataContent = fileContent[i].Split(' ');
+        for (int i = 0; i < fileContent.length; i++) {
+            String[] dataContent = fileContent[i].split(' ');
 
-            string command = dataContent[0];
+            String command = dataContent[0];
 
             if (command == "STOP") {
                 Memoria[i + offsetParticao] = new PosicaoDeMemoria
@@ -124,7 +133,7 @@ public class MemoryManager {
                 continue;
             }
 
-            string[] parameters = dataContent[1].Replace(" ", "").Split(',');
+            String[] parameters = dataContent[1].replace(" ", "").split(',');
 
             if (command == "JMP" || command == "JMPI") {
                 Memoria[i + offsetParticao] = new PosicaoDeMemoria
@@ -146,15 +155,15 @@ public class MemoryManager {
             }
         }
         // indicando que a partição já está alocada
-        Particoes[particao].Status = Status.ALOCADO;
-        ParticoesAlocadas++;
+        particoes[particao].status = ParticaoMemoria.Status.ALOCADO;
+        particoesAlocadas++;
     }
 
-    public static void DesalocarParticao(int particao, int offset, int enderecoLimite) {
-        Particoes[particao].Status = Status.DESALOCADO;
+    public void desalocarParticao(int particao, int offset, int enderecoLimite) {
+        particoes[particao].status = ParticaoMemoria.Status.DESALOCADO;
 
         for (int i = offset; i <= enderecoLimite; i++) {
-            Memoria[offset] = new PosicaoDeMemoria();
+            memoria[offset] = new PosicaoDeMemoria();
         }
     }
 }

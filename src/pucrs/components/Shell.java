@@ -38,7 +38,7 @@ public class Shell extends Thread {
                 case 4:
                 case 5:
                     GerenteProcesso.LoadProgram(program);
-                    Thread.Sleep(100);
+                    Thread.sleep(100);
                     break;
                 case 6:
                     consoleIO = new Thread(new ThreadStart(ConsoleIO.ExecutarConsoleIO));

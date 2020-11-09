@@ -1,5 +1,8 @@
+package pucrs;
+
 import pucrs.components.Scheduler;
 import pucrs.components.Shell;
+import pucrs.components.ProcessManager;
 import java.util.concurrent.Semaphore;
 
 public class OpSystem {
@@ -14,7 +17,7 @@ public class OpSystem {
 
     public static Semaphore semaforoShell = new Semaphore(1);
 
-    public OpSystem(int partitions) {
+    public OpSystem(int partitions) throws Exception {
         processManager = new ProcessManager(partitions);
     }
 

@@ -1,12 +1,13 @@
 package pucrs.routines;
 
+import pucrs.components.Scheduler;
 import pucrs.domain.ProcessControlBlock;
 import pucrs.queues.FilaDeProntos;
 
 public class RotinaTratamentoTimer {
     FilaDeProntos filaDeProntos = new FilaDeProntos();
 
-    public void TratarInterrupcaoTimer(ProcessControlBlock pcb) {
+    public void tratarInterrupcaoTimer(ProcessControlBlock pcb) {
         //Decidindo se o processo volta pra fila
         if (pcb.state == ProcessControlBlock.State.WAITING) {
             filaDeProntos.addProcess(pcb);

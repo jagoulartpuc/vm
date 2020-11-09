@@ -1,3 +1,7 @@
+package pucrs.components;
+
+import pucrs.domain.ProcessControlBlock;
+
 import java.util.Random;
 
 public class ProcessManager {
@@ -23,44 +27,44 @@ public class ProcessManager {
     public void loadProgram(int programNumber) {
         String filePath = Environment.CurrentDirectory + @ "\assemblyPrograms\P" + programNumber + ".txt";
 
-        int particao = ParticaoAleatoria();
+        int particao = randomPartition();
 
         MemoryManager.ReadFile(filePath, particao);
 
         count++;
-        string processID = "P" + count;
-        CreatePCB(processID, particao);
+        String processID = "P" + count;
+        createPCB(processID, particao);
     }
 
     public int randomPartition() {
-        if (MemoryManager.MemoriaCheia()) {
+        if (MemoryManager.memoriaCheia()) {
             throw new StackOverflowException("Impossível alocar mais processos na memória pois todas partições já estão alocadas. Encerrando execução da VM");
         }
 
         Random r = new Random();
 
-        int particaoAleatoria = r.nextInt(MemoryManager.NumeroParticoes);
+        int particaoAleatoria = r.nextInt(MemoryManager.numeroParticoes);
 
         // enquanto a partição aleatoria estiver ocupada, procurar uma próxima aleatoria
-        while (!MemoryManager.ParticaoEstaLivre(particaoAleatoria)) {
-            particaoAleatoria = r.nextInt(MemoryManager.NumeroParticoes);
+        while (!MemoryManager.particaoEstaLivre(particaoAleatoria)) {
+            particaoAleatoria = r.nextInt(MemoryManager.numeroParticoes);
         }
 
         return particaoAleatoria;
     }
 
-    public void CreatePCB(string processID, int particao) {
+    public void createPCB(String processID, int particao) {
         ProcessControlBlock pcb = new ProcessControlBlock(processID, particao);
 
         int offSet;
         int enderecoMax;
 
         offSet = GerenteDeMemoria.CalculaOffset(particao);
-        pcb.Pc = offSet;
-        pcb.OffSet = offSet;
+        pcb.pc = offSet; //AMBOS RECEBEM OFFSET ???
+        pcb.offSet = offSet;
 
-        enderecoMax = MemoryManager.CalculaEnderecoMax(particao);
-        pcb.EnderecoLimite = enderecoMax;
+        enderecoMax = MemoryManager.calculaEnderecoMax(particao);
+        pcb.enderecoLimite = enderecoMax;
 
         FilaDeProntos.AddProcess(pcb);
     }

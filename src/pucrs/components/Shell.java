@@ -1,8 +1,13 @@
 package pucrs.components;
 
+import pucrs.queues.*;
+
 import java.util.Scanner;
 
 public class Shell extends Thread {
+    FilaBloqueadosIO filaBloqueadosIO = new FilaBloqueadosIO();
+    FilaDeFinalizados filaDeFinalizados = new FilaDeFinalizados();
+    FilaDeProntos filaDeProntos = new FilaDeProntos();
 
     public void run() {
         while (true) {
@@ -43,13 +48,13 @@ public class Shell extends Thread {
                     break;
 
                 case 7:
-                    FilaDeProntos.PrintFilaDeProntos();
+                    filaDeProntos.printFilaDeProntos();
                     break;
                 case 8:
-                    FilaBloqueadosIO.PrintFilaDeBloqueados();
+                    filaBloqueadosIO.printFilaDeBloqueados();
                     break;
                 case 9:
-                    FilaDeFinalizados.PrintFilaDeFinalizados();
+                    filaDeFinalizados.printFilaDeFinalizados();
                     break;
                 case 0:
                     System.Environment.Exit(0);

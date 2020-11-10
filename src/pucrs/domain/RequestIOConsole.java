@@ -1,15 +1,15 @@
 package pucrs.domain;
 
-public class PedidoConsoleIO {
-    public String processID;
-    public IOType ioOperation;
-    public int endereco;
-    public String value;
+public class RequestIOConsole {
+    private String processID;
+    private IOType ioOperation;
+    private int adress;
+    private String value;
 
-    public PedidoConsoleIO(String processID, IOType ioOperation, int endereco) {
+    public RequestIOConsole(String processID, IOType ioOperation, int adress) {
         this.processID = processID;
         this.ioOperation = ioOperation;
-        this.endereco = endereco;
+        this.adress = adress;
     }
 
     public String getProcessID() {
@@ -28,12 +28,12 @@ public class PedidoConsoleIO {
         this.ioOperation = ioOperation;
     }
 
-    public int getEndereco() {
-        return this.endereco;
+    public int getAdress() {
+        return adress;
     }
 
-    public void setEndereco(int endereco) {
-        this.endereco = endereco;
+    public void setAdress(int adress) {
+        this.adress = adress;
     }
 
     public String getValue() {

@@ -1,25 +1,30 @@
 package pucrs.components;
 
-import pucrs.domain.ParticaoMemoria;
-import pucrs.domain.PosicaoDeMemoria;
+import pucrs.domain.MemoryPos;
+import pucrs.domain.Partition;
 import pucrs.domain.ProcessControlBlock;
 
-import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Scanner;
 
 public class MemoryManager {
-    private int TAMANHO_MAXIMO_POSICOES_DE_MEMORIA = 1024;
+    private int MAX_MEMORY_SIZE = 1024;
 
-    private int TAMANHO_MINIMO_PARTICOES_PERMITIDO = 4;
+    private int MIN_MEMORY_SIZE = 4;
 
-    private int TAMANHO_MAXIMO_PARTICOES_PERMITIDO = 8;
+    private int MAX_MEMORY_ALLOWED = 8;
 
-    public ParticaoMemoria[] particoes;
+    private Partition[] partitions;
 
-    public ParticaoMemoria[] getParticoes() {
-        return this.particoes;
+    public Partition[] getParticoes() {
+        return this.partitions;
     }
 
-    public int numeroParticoes;
+    int numeroParticoes;
 
     public int getNumeroParticoes() {
         return this.numeroParticoes;
@@ -39,132 +44,122 @@ public class MemoryManager {
         this.particoesAlocadas = particoesAlocadas;
     }
 
-    public PosicaoDeMemoria[] memoria;
+    public static MemoryPos[] memory;
 
-    public PosicaoDeMemoria[] getMemoria() {
-        return this.memoria;
-    }
-
-    public MemoryManager(int numeroParticoes) {
+    public MemoryManager(int numeroParticoes) throws Exception {
         if (numeroParticoes % 2 != 0) {
-            throw new ArgumentException("Não é possivel criar um número impar de partições, use apenas números 2^n. Encerrando execução");
+            throw new Exception("Não é possivel criar um número impar de partições, use apenas números 2^n. Encerrando execução");
         }
 
-        if (numeroParticoes > TAMANHO_MAXIMO_PARTICOES_PERMITIDO) {
-            throw new ArgumentException($"O tamanho máximo de partições permitido para uma CPU é de [{TAMANHO_MAXIMO_PARTICOES_PERMITIDO}]. Encerrando execução.");
+        if (numeroParticoes > MAX_MEMORY_SIZE) {
+            throw new Exception("O tamanho máximo de partições permitido para uma CPU é de " + MAX_MEMORY_SIZE + ". Encerrando execução.");
         }
 
-        if (numeroParticoes < TAMANHO_MINIMO_PARTICOES_PERMITIDO) {
-            throw new ArgumentException($"O tamanho mínimo de partições permitido para uma CPU é de [{TAMANHO_MINIMO_PARTICOES_PERMITIDO}]. Encerrando execução.");
+        if (numeroParticoes < MIN_MEMORY_SIZE) {
+            throw new Exception("O tamanho mínimo de partições permitido para uma CPU é de " + MIN_MEMORY_SIZE + ". Encerrando execução.");
         }
 
         this.numeroParticoes = numeroParticoes;
         this.particoesAlocadas = 0;
 
-        particoes = new ParticaoMemoria[numeroParticoes];
-        memoria = new PosicaoDeMemoria[TAMANHO_MAXIMO_POSICOES_DE_MEMORIA];
+        partitions = new Partition[numeroParticoes];
+        memory = new MemoryPos[MAX_MEMORY_SIZE];
 
         for (int i = 0; i < numeroParticoes; i++) {
-            particoes[i] = new ParticaoMemoria();
+            partitions[i] = new Partition();
         }
     }
 
-    public boolean particaoEstaLivre(int particao) {
-        return particoes[particao].status == ParticaoMemoria.Status.DESALOCADO;
+    public boolean isFreePartition(int partition) {
+        return partitions[partition].status == Partition.Status.DEALLOCATED;
     }
 
-    public boolean memoriaCheia() {
-        return particoes.All(x = > x.Status == ParticaoMemoria.Status.ALOCADO);
+    public boolean isFullMemory() {
+        for (Partition partition : partitions) {
+            if (partition.status.equals(Partition.Status.DEALLOCATED)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public int calculaOffset(int particao) {
-        return particao * (memoria.length / numeroParticoes);
+        return particao * (memory.length / numeroParticoes);
     }
 
     public int calculaEnderecoMax(int particao) {
-        // Como o array de partiçoes inicia em 0, se nao realizarmos a operação ++ o calculo de boundsRegister ia pegar o endereço mínimo ao invés do máximo,
-        // Exemplo, caso nao tivesse esse comando abaixo, na partição 1 (segunda do array) o calculo iria retornar 127, ao invés de 255, que é realmente o endereço maximo dessa
-        // partição em específico
         particao++;
-
-        int boundsRegister = particao * (memoria.length / numeroParticoes) - 1;
+        int boundsRegister = particao * (memory.length / numeroParticoes) - 1;
         return boundsRegister;
     }
 
-    public static int calculaEnderecoMemoria(ProcessControlBlock pcb, int endereco) {
-        int offset = pcb.offSet;
+    public static int calculaEnderecoMemoria(ProcessControlBlock pcb, int endereco) throws Exception {
+        int offset = pcb.getOffSet();
+        int trueAdress = offset + endereco;
 
-        int enderecoCorrigido = offset + endereco;
-
-        int maximumBound = pcb.enderecoLimite;
-
-        if (enderecoCorrigido > maximumBound) {
-            throw new AcessoIndevidoException($"SEGMENTATION FAULT, o endereço fornecido {enderecoCorrigido} está fora do limite da partição que é {maximumBound}");
+        if (trueAdress > pcb.getLimitAdress()) {
+            throw new Exception("SEGMENTATION FAULT, o endereço fornecido " + trueAdress + "está fora do limite da partição que é " + pcb.getLimitAdress());
         }
 
-        return enderecoCorrigido;
+        return trueAdress;
     }
 
-    public void readFile(String filePath, int particao) {
-        String[] fileContent = File.readAllLines(filePath);
+    public void readFile(String filePath, int particao) throws IOException {
+        Path path = Paths.get(filePath);
+        int counter = 0;
+        try (Scanner sc = new Scanner(Files.newBufferedReader(path, StandardCharsets.UTF_8))) {
+            sc.useDelimiter("[\n]");
+            while (sc.hasNext()) {
+                String line = sc.nextLine();
+                int offsetParticao = calculaOffset(particao);
 
-        int offsetParticao = calculaOffset(particao);
+                String[] dataContent = line.split(" ");
 
-        for (int i = 0; i < fileContent.length; i++) {
-            String[] dataContent = fileContent[i].split(' ');
+                String command = dataContent[0];
 
-            String command = dataContent[0];
+                if (command.equals("STOP") || command.equals("SWAP")) {
+                    MemoryPos memoryPos = new MemoryPos();
+                    memoryPos.setOpcode(command);
+                    memory[counter + offsetParticao] = memoryPos;
+                }
 
-            if (command == "STOP") {
-                Memoria[i + offsetParticao] = new PosicaoDeMemoria
-                {
-                    OPCode = "STOP"
-                } ;
+                String[] parameters = dataContent[1].replace(" ", "").split(",");
 
-                continue;
+                if (command.equals("JMP") || command.equals("JMPI")) {
+                    MemoryPos memoryPos = new MemoryPos();
+                    memoryPos.setOpcode(command);
+                    memoryPos.setReg1(parameters[0].contains("r") ? parameters[0] : null);
+                    memoryPos.setParameter(tryParseInt(parameters[0]));
+                    memory[counter + offsetParticao] = memoryPos;
+                } else {
+                    MemoryPos memoryPos = new MemoryPos();
+                    memoryPos.setOpcode(command);
+                    memoryPos.setReg1(parameters[0].contains("r") || parameters[0].contains("[") ? parameters[0] : null);
+                    memoryPos.setReg2(parameters[1].contains("r") || parameters[1].contains("[") ? parameters[1] : null);
+                    memoryPos.setParameter(tryParseInt(parameters[1]));
+                    memory[counter + offsetParticao] = memoryPos;
+                }
+                counter++;
             }
-
-            if (command == "SWAP") {
-                Memoria[i + offsetParticao] = new PosicaoDeMemoria
-                {
-                    OPCode = "SWAP"
-                } ;
-
-                continue;
-            }
-
-            String[] parameters = dataContent[1].replace(" ", "").split(',');
-
-            if (command == "JMP" || command == "JMPI") {
-                Memoria[i + offsetParticao] = new PosicaoDeMemoria
-                {
-                    OPCode = command,
-                            Reg1 = parameters[0].Contains("r") ? parameters[0] : null,
-                            Parameter = Int32.TryParse(parameters[0], out int value) ?value:
-                0
-                } ;
-            } else {
-                Memoria[i + offsetParticao] = new PosicaoDeMemoria
-                {
-                    OPCode = command,
-                            Reg1 = parameters[0].Contains("r") || parameters[0].Contains("[") ? parameters[0] : null,
-                            Reg2 = parameters[1].Contains("r") || parameters[1].Contains("[") ? parameters[1] : null,
-                            Parameter = Int32.TryParse(parameters[1], out int value) ?value:
-                0
-                } ;
-            }
+            partitions[particao].status = Partition.Status.ALLOCATED;
+            particoesAlocadas++;
         }
-        // indicando que a partição já está alocada
-        particoes[particao].status = ParticaoMemoria.Status.ALOCADO;
-        particoesAlocadas++;
     }
 
     public void desalocarParticao(int particao, int offset, int enderecoLimite) {
-        particoes[particao].status = ParticaoMemoria.Status.DESALOCADO;
+        partitions[particao].status = Partition.Status.DEALLOCATED;
 
         for (int i = offset; i <= enderecoLimite; i++) {
-            memoria[offset] = new PosicaoDeMemoria();
+            memory[offset] = new MemoryPos();
         }
     }
-}
+
+    public int tryParseInt(String value) {
+        try {
+            return Integer.parseInt(value);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
 }

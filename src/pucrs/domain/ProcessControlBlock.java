@@ -1,119 +1,32 @@
 package pucrs.domain;
 
-import java.util.Dictionary;
-import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
-// é um bloco de informações de controle a respeito de um processo,
-// ele basicamente representa um processo;
 public class ProcessControlBlock {
-    public Dictionary<String, Integer> registradores;
-    public String processID;
-    public State state;
-    public int pc;
-    public int offSet;
-    public int enderecoLimite;
-    public int particaoAtual;
+    private Map<String, Integer> registers;
+    private String processID;
+    private State state;
+    private int pc;
+    private int offSet;
+    private int limitAdress;
+    private int actualPartition;
 
-    public ProcessControlBlock(String processID, int particaoAtual) {
-        registradores = new Dictionary<String, Integer>() {
-            @Override
-            public int size() {
-                return 0;
-            }
+    public ProcessControlBlock(String processID, int actualPartition) {
+        registers = new HashMap<>();
 
-            @Override
-            public boolean isEmpty() {
-                return false;
-            }
-
-            @Override
-            public Enumeration<String> keys() {
-                return null;
-            }
-
-            @Override
-            public Enumeration<Integer> elements() {
-                return null;
-            }
-
-            @Override
-            public Integer get(Object key) {
-                return null;
-            }
-
-            @Override
-            public Integer put(String key, Integer value) {
-                return null;
-            }
-
-            @Override
-            public Integer remove(Object key) {
-                return null;
-            }
-        };
-        
-        registradores.put("r0", 0);
-        registradores.put("r1", 0);
-        registradores.put("r2", 0);
-        registradores.put("r3", 0);
-        registradores.put("r4", 0);
-        registradores.put("r5", 0);
-        registradores.put("r6", 0);
-        registradores.put("r7", 0);
+        registers.put("r0", 0);
+        registers.put("r1", 0);
+        registers.put("r2", 0);
+        registers.put("r3", 0);
+        registers.put("r4", 0);
+        registers.put("r5", 0);
+        registers.put("r6", 0);
+        registers.put("r7", 0);
 
         this.processID = processID;
         this.state = State.READY;
-        this.particaoAtual = particaoAtual;
-    }
-
-    //COMO FAZER GET E SET PRO DICIONARIO???
-
-    public String getProcessID() {
-        return this.processID;
-    }
-
-    public void setProcessID(String processID) {
-        this.processID = processID;
-    }
-
-    public State getState() {
-        return this.state;
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }
-
-    public int getPc() {
-        return this.pc;
-    }
-
-    public void setPc(int pc) {
-        this.pc = pc;
-    }
-
-    public int getOffSet() {
-        return this.offSet;
-    }
-
-    public void setOffSet(int offSet) {
-        this.offSet = offSet;
-    }
-
-    public int getEnderecoLimite() {
-        return this.enderecoLimite;
-    }
-
-    public void setEnderecoLimite(int enderecoLimite) {
-        this.enderecoLimite = enderecoLimite;
-    }
-
-    public int getParticaoAtual() {
-        return this.particaoAtual;
-    }
-
-    public void setParticaoAtual(int particaoAtual) {
-        this.particaoAtual = particaoAtual;
+        this.actualPartition = actualPartition;
     }
 
     public enum State
@@ -124,5 +37,61 @@ public class ProcessControlBlock {
         FINISHED,
         BLOCKED_BY_IO_OPERATION,
         ABORTED_DUE_TO_EXCEPTION
+    }
+
+    public Map<String, Integer> getRegisters() {
+        return registers;
+    }
+
+    public void setRegisters(Map<String, Integer> registers) {
+        this.registers = registers;
+    }
+
+    public String getProcessID() {
+        return processID;
+    }
+
+    public void setProcessID(String processID) {
+        this.processID = processID;
+    }
+
+    public State getState() {
+        return state;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public int getPc() {
+        return pc;
+    }
+
+    public void setPc(int pc) {
+        this.pc = pc;
+    }
+
+    public int getOffSet() {
+        return offSet;
+    }
+
+    public void setOffSet(int offSet) {
+        this.offSet = offSet;
+    }
+
+    public int getLimitAdress() {
+        return limitAdress;
+    }
+
+    public void setLimitAdress(int limitAdress) {
+        this.limitAdress = limitAdress;
+    }
+
+    public int getActualPartition() {
+        return actualPartition;
+    }
+
+    public void setActualPartition(int actualPartition) {
+        this.actualPartition = actualPartition;
     }
 }

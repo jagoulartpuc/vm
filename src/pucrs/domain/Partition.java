@@ -1,10 +1,10 @@
 package pucrs.domain;
 
-public class ParticaoMemoria {
+public class Partition {
     public Status status;
 
-    public ParticaoMemoria() {
-        status = Status.DESALOCADO;
+    public Partition() {
+        status = Status.DEALLOCATED;
     }
 
     public Status getStatus() {
@@ -16,7 +16,7 @@ public class ParticaoMemoria {
     }
     
     public enum Status {
-        ALOCADO, 
-        DESALOCADO
+        ALLOCATED,
+        DEALLOCATED
     }
 }

@@ -1,12 +1,10 @@
 package pucrs.domain;
 
-public class PosicaoDeMemoria {
+public class MemoryPos {
     public String opCode;
     public String reg1;
     public String reg2;
     public int parameter;
-
-    //FAZER @OVERRIDE TOSTRING
 
     public String getOpcode() {
         return this.opCode;
@@ -38,5 +36,21 @@ public class PosicaoDeMemoria {
 
     public void setParameter(int parameter) {
         this.parameter = parameter;
-    } 
+    }
+
+    @Override
+    public String toString() {
+        if (opCode == "DATA") {
+            return "MemoryPos{" +
+                    "opCode='" + opCode + '\'' +
+                    ", parameter=" + parameter +
+                    '}';
+        }
+        return "MemoryPos{" +
+                "opCode='" + opCode + '\'' +
+                ", reg1='" + reg1 + '\'' +
+                ", reg2='" + reg2 + '\'' +
+                ", parameter=" + parameter +
+                '}';
+    }
 }

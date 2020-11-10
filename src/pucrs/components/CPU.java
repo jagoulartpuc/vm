@@ -1,15 +1,14 @@
 package pucrs.components;
 
-import pucrs.domain.PedidoConsoleIO;
+import pucrs.domain.RequestIOConsole;
 import pucrs.domain.PosicaoDeMemoria;
 import pucrs.domain.ProcessControlBlock;
-import pucrs.routines.RotinaTratamentoTimer;
 
 import java.util.concurrent.Semaphore;
 
 public class CPU {
 
-    public Semaphore semCPU = new Semaphore(1);
+    public static Semaphore noCPU = new Semaphore(1);
 
     public static void ExecutarCPU(ProcessControlBlock pcb) {
         pcb.state = ProcessControlBlock.State.RUNNING;
@@ -68,12 +67,12 @@ public class CPU {
 
                     //Read
                     if (operation == "1") {
-                        RotinaTratamentoIO.TratarPedidoIO(pcb, PedidoConsoleIO.IOType.READ, memoryPosition);
+                        RotinaTratamentoIO.TratarPedidoIO(pcb, RequestIOConsole.IOType.READ, memoryPosition);
                         break;
                     }
                     //Write
                     else {
-                        RotinaTratamentoIO.TratarPedidoIO(pcb, PedidoConsoleIO.IOType.WRITE, memoryPosition);
+                        RotinaTratamentoIO.TratarPedidoIO(pcb, RequestIOConsole.IOType.WRITE, memoryPosition);
                         break;
                     }
                 } else {

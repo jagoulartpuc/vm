@@ -5,7 +5,7 @@ import pucrs.queues.*;
 import java.util.Scanner;
 
 public class Shell extends Thread {
-    FilaBloqueadosIO filaBloqueadosIO = new FilaBloqueadosIO();
+    BlockedIOQueue blockedIOQueue = new BlockedIOQueue();
     FilaDeFinalizados filaDeFinalizados = new FilaDeFinalizados();
     FilaDeProntos filaDeProntos = new FilaDeProntos();
 
@@ -51,7 +51,7 @@ public class Shell extends Thread {
                     filaDeProntos.printFilaDeProntos();
                     break;
                 case 8:
-                    filaBloqueadosIO.printFilaDeBloqueados();
+                    blockedIOQueue.printFilaDeBloqueados();
                     break;
                 case 9:
                     filaDeFinalizados.printFilaDeFinalizados();

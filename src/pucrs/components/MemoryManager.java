@@ -20,52 +20,52 @@ public class MemoryManager {
 
     private Partition[] partitions;
 
-    public Partition[] getParticoes() {
-        return this.partitions;
-    }
+    int partitionsNumber;
 
-    int numeroParticoes;
-
-    public int getNumeroParticoes() {
-        return this.numeroParticoes;
-    }
-
-    public void setNumeroParticoes(int numeroParticoes) {
-        this.numeroParticoes = numeroParticoes;
-    }
-
-    private int particoesAlocadas;
-
-    public int getParticoesAlocadas() {
-        return this.particoesAlocadas;
-    }
-
-    public void setParticoesAlocadas(int particoesAlocadas) {
-        this.particoesAlocadas = particoesAlocadas;
-    }
+    private int allocatedPartitions;
 
     public static MemoryPos[] memory;
 
-    public MemoryManager(int numeroParticoes) throws Exception {
-        if (numeroParticoes % 2 != 0) {
+    public Partition[] getPartitions() {
+        return this.partitions;
+    }
+
+    public int getPartitionsNumber() {
+        return this.partitionsNumber;
+    }
+
+    public void setPartitionsNumber(int partitionsNumber) {
+        this.partitionsNumber = partitionsNumber;
+    }
+
+    public int getAllocatedPartitions() {
+        return this.allocatedPartitions;
+    }
+
+    public void setAllocatedPartitions(int allocatedPartitions) {
+        this.allocatedPartitions = allocatedPartitions;
+    }
+
+    public MemoryManager(int partitionsNumber) throws Exception {
+        if (partitionsNumber % 2 != 0) {
             throw new Exception("Não é possivel criar um número impar de partições, use apenas números 2^n. Encerrando execução");
         }
 
-        if (numeroParticoes > MAX_MEMORY_SIZE) {
+        if (partitionsNumber > MAX_MEMORY_SIZE) {
             throw new Exception("O tamanho máximo de partições permitido para uma CPU é de " + MAX_MEMORY_SIZE + ". Encerrando execução.");
         }
 
-        if (numeroParticoes < MIN_MEMORY_SIZE) {
+        if (partitionsNumber < MIN_MEMORY_SIZE) {
             throw new Exception("O tamanho mínimo de partições permitido para uma CPU é de " + MIN_MEMORY_SIZE + ". Encerrando execução.");
         }
 
-        this.numeroParticoes = numeroParticoes;
-        this.particoesAlocadas = 0;
+        this.partitionsNumber = partitionsNumber;
+        this.allocatedPartitions = 0;
 
-        partitions = new Partition[numeroParticoes];
+        partitions = new Partition[partitionsNumber];
         memory = new MemoryPos[MAX_MEMORY_SIZE];
 
-        for (int i = 0; i < numeroParticoes; i++) {
+        for (int i = 0; i < partitionsNumber; i++) {
             partitions[i] = new Partition();
         }
     }
@@ -83,19 +83,19 @@ public class MemoryManager {
         return true;
     }
 
-    public int calculaOffset(int particao) {
-        return particao * (memory.length / numeroParticoes);
+    public int calculatesOffset(int partition) {
+        return partition * (memory.length / partitionsNumber);
     }
 
-    public int calculaEnderecoMax(int particao) {
-        particao++;
-        int boundsRegister = particao * (memory.length / numeroParticoes) - 1;
+    public int calculatesMaxAddress(int partition) {
+        partition++;
+        int boundsRegister = partition * (memory.length / partitionsNumber) - 1;
         return boundsRegister;
     }
 
-    public static int calculaEnderecoMemoria(ProcessControlBlock pcb, int endereco) throws Exception {
+    public static int calculatesMemoryAddress(ProcessControlBlock pcb, int address) throws Exception {
         int offset = pcb.getOffSet();
-        int trueAdress = offset + endereco;
+        int trueAdress = offset + address;
 
         if (trueAdress > pcb.getLimitAdress()) {
             throw new Exception("SEGMENTATION FAULT, o endereço fornecido " + trueAdress + "está fora do limite da partição que é " + pcb.getLimitAdress());
@@ -111,7 +111,7 @@ public class MemoryManager {
             sc.useDelimiter("[\n]");
             while (sc.hasNext()) {
                 String line = sc.nextLine();
-                int offsetParticao = calculaOffset(particao);
+                int offsetParticao = calculatesOffset(particao);
 
                 String[] dataContent = line.split(" ");
 
@@ -142,14 +142,14 @@ public class MemoryManager {
                 counter++;
             }
             partitions[particao].status = Partition.Status.ALLOCATED;
-            particoesAlocadas++;
+            allocatedPartitions++;
         }
     }
 
-    public void desalocarParticao(int particao, int offset, int enderecoLimite) {
-        partitions[particao].status = Partition.Status.DEALLOCATED;
+    public void deallocatePartition(int partition, int offset, int limitAddress) {
+        partitions[partition].status = Partition.Status.DEALLOCATED;
 
-        for (int i = offset; i <= enderecoLimite; i++) {
+        for (int i = offset; i <= limitAddress; i++) {
             memory[offset] = new MemoryPos();
         }
     }

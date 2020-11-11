@@ -6,8 +6,8 @@ import java.util.Scanner;
 
 public class Shell extends Thread {
     BlockedIOQueue blockedIOQueue = new BlockedIOQueue();
-    FilaDeFinalizados filaDeFinalizados = new FilaDeFinalizados();
-    FilaDeProntos filaDeProntos = new FilaDeProntos();
+    FinishedQueue finishedQueue = new FinishedQueue();
+    ReadyQueue readyQueue = new ReadyQueue();
 
     public void run() {
         while (true) {
@@ -37,7 +37,7 @@ public class Shell extends Thread {
                 case 3:
                 case 4:
                 case 5:
-                    GerenteProcesso.LoadProgram(program);
+                    ProcessManager.loadProgram(program);
                     Thread.sleep(100);
                     break;
                 case 6:
@@ -48,13 +48,13 @@ public class Shell extends Thread {
                     break;
 
                 case 7:
-                    filaDeProntos.printFilaDeProntos();
+                    readyQueue.print();
                     break;
                 case 8:
-                    blockedIOQueue.printFilaDeBloqueados();
+                    blockedIOQueue.print();
                     break;
                 case 9:
-                    filaDeFinalizados.printFilaDeFinalizados();
+                    finishedQueue.printFilaDeFinalizados();
                     break;
                 case 0:
                     System.Environment.Exit(0);

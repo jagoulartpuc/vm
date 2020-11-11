@@ -1,6 +1,7 @@
 package pucrs.components;
 
 import pucrs.domain.ProcessControlBlock;
+import pucrs.queues.ReadyQueue;
 
 import java.util.Random;
 
@@ -29,7 +30,7 @@ public class ProcessManager {
 
         int particao = randomPartition();
 
-        MemoryManager.ReadFile(filePath, particao);
+        MemoryManager.readFile(filePath, particao);
 
         count++;
         String processID = "P" + count;
@@ -37,17 +38,17 @@ public class ProcessManager {
     }
 
     public int randomPartition() {
-        if (MemoryManager.memoriaCheia()) {
+        if (MemoryManager.isFullMemory()) {
             throw new StackOverflowException("Impossível alocar mais processos na memória pois todas partições já estão alocadas. Encerrando execução da VM");
         }
 
         Random r = new Random();
 
-        int particaoAleatoria = r.nextInt(MemoryManager.numeroParticoes);
+        int particaoAleatoria = r.nextInt(MemoryManager.getPartitionsNumber());
 
         // enquanto a partição aleatoria estiver ocupada, procurar uma próxima aleatoria
-        while (!MemoryManager.particaoEstaLivre(particaoAleatoria)) {
-            particaoAleatoria = r.nextInt(MemoryManager.numeroParticoes);
+        while (!MemoryManager.isFreePartition(particaoAleatoria)) {
+            particaoAleatoria = r.nextInt(MemoryManager.getPartitionsNumber());
         }
 
         return particaoAleatoria;
@@ -59,14 +60,14 @@ public class ProcessManager {
         int offSet;
         int enderecoMax;
 
-        offSet = GerenteDeMemoria.CalculaOffset(particao);
-        pcb.pc = offSet; //AMBOS RECEBEM OFFSET ???
-        pcb.offSet = offSet;
+        offSet = MemoryManager.calculatesOffset(particao);
+        pcb.setPc(offSet); //AMBOS RECEBEM OFFSET ???
+        pcb.setOffSet(offSet);
 
-        enderecoMax = MemoryManager.calculaEnderecoMax(particao);
-        pcb.enderecoLimite = enderecoMax;
+        enderecoMax = MemoryManager.calculatesMaxAddress(particao);
+        pcb.setLimitAdress(enderecoMax);
 
-        FilaDeProntos.AddProcess(pcb);
+        ReadyQueue.add(pcb);
     }
 }
 }

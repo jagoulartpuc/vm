@@ -6,12 +6,12 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Queue;
 
-public class FilaDeFinalizados {
-    private Queue<ProcessControlBlock> filaFinalizados;
+public class FinishedQueue {
+    private Queue<ProcessControlBlock> finishedQueue;
 
     //private FilaDeFinalizados() {} ???
-    public FilaDeFinalizados() {
-        filaFinalizados = new Queue<ProcessControlBlock>() {
+    public FinishedQueue() {
+        finishedQueue = new Queue<ProcessControlBlock>() {
             @Override
             public int size() {
                 return 0;
@@ -117,27 +117,27 @@ public class FilaDeFinalizados {
     //COMO FAZER GET E SET ???
 
     public void addProcess(ProcessControlBlock pcb) {
-        filaFinalizados.add(pcb);
+        finishedQueue.add(pcb);
 
-        System.out.println("Adicionou o processo " + pcb.processID + " a fila de processos finalizados.");
+        System.out.println("Adicionou o processo " + pcb.getProcessID() + " a fila de processos finalizados.");
     }
 
     public ProcessControlBlock dequeueProcess() {
-        return filaFinalizados.remove();
+        return finishedQueue.remove();
     }
 
-    public int contarProcessos() {
-        return filaFinalizados.size();
+    public int countProcess() {
+        return finishedQueue.size();
     }
 
     public void printFilaDeFinalizados() {
-        if (filaFinalizados.size() == 0) {
+        if (finishedQueue.size() == 0) {
             System.out.println("Não há processos finalizados no momento.");
         } else {
             System.out.println("Printando fila de processos finalizados:");
 
-            for(ProcessControlBlock pcb : filaFinalizados) {
-                System.out.println("Process Id: {" + pcb.processID + "} | State: {" + pcb.state + "} | OffSet: {" + pcb.offSet + "} | EndereçoLimite: {" + pcb.enderecoLimite + "}");
+            for(ProcessControlBlock pcb : finishedQueue) {
+                System.out.println("Process Id: {" + pcb.getProcessID() + "} | State: {" + pcb.getState() + "} | OffSet: {" + pcb.getOffSet() + "} | EndereçoLimite: {" + pcb.getLimitAdress() + "}");
             }
         }
     }

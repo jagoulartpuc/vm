@@ -3,7 +3,7 @@ package pucrs.components;
 import pucrs.domain.RequestIOConsole;
 import pucrs.domain.MemoryPos;
 import pucrs.domain.ProcessControlBlock;
-import pucrs.routines.TreatmentRoutineFin;
+import pucrs.exceptions.ImproperAccessException;
 import pucrs.routines.TreatmentRoutineIO;
 
 import java.util.concurrent.Semaphore;
@@ -12,9 +12,9 @@ public class CPU {
 
     public static Semaphore noCPU = new Semaphore(1);
 
-    public static void ExecutarCPU(ProcessControlBlock pcb) {
+    public static void execute(ProcessControlBlock pcb) throws Exception {
         pcb.setState(ProcessControlBlock.State.RUNNING);
-        int CommandsCount = 0;
+        int commandsCount = 0;
 
         // Mostrando o processo rodando
         System.out.println("Process Id: " + pcb.getProcessID());
@@ -25,24 +25,25 @@ public class CPU {
         int memoryPosition = 0;
         int pc, reg;
         MemoryPos currentLine = MemoryManager.memory[pcb.getPc()];
+        MemoryPos memoryPos;
 
         try {
             while (true) {
-                if (TimerCPU.verifyTimeFact(CommandsCount)) {
+                if (TimerCPU.verifyTimeFact(commandsCount)) {
 
                     pcb.setState(ProcessControlBlock.State.WAITING);
                     TreatmentRoutineIO.treatTimerInterruption(pcb);
                     break;
                 }
 
-                if (currentLine.getOpcode() == "STOP") {
+                if (currentLine.getOpcode().equals("STOP")) {
                     System.out.println("entrando na rotina de finalização");
-                    TreatmentRoutineFin.finishProcess(pcb);
+                    TreatmentRoutineIO.finishProcess(pcb);
                     break;
                 }
 
                 //IO
-                if (currentLine.getOpcode() == "TRAP") {
+                if (currentLine.getOpcode().equals("TRAP")) {
                     System.out.println("Entrando na rotina de tratamento de IO");
 
                     String operation = currentLine.getReg1();
@@ -66,7 +67,7 @@ public class CPU {
                     }
                 } else {
                     currentLine = MemoryManager.memory[pcb.getPc()];
-                    CommandsCount++;
+                    commandsCount++;
 
                     switch (currentLine.getOpcode()) {
                         // faz PC pular direto pra uma linha k
@@ -175,7 +176,7 @@ public class CPU {
                         case "STD":
                             value = currentLine.getReg1();
                             memoryPosition = MemoryManager.calculatesMemoryAddress(pcb, Integer.parseInt(value));
-                            MemoryPos memoryPos = new MemoryPos();
+                            memoryPos = new MemoryPos();
                             memoryPos.setOpcode("DATA");
                             memoryPos.setParameter(pcb.getRegisters().get(currentLine.getReg2()));
 
@@ -227,11 +228,10 @@ public class CPU {
                         // faz a operaçao: rx = rx AND k
                         // AND rx,k
                         case "ANDI":
-                            if (new int[]{0, 1}.Contains(pcb.registradores[currentLine.getReg1()()])) {
-                                logicalResult = Convert.ToBoolean(currentLine.parameter) &&
-                                        Convert.ToBoolean(pcb.registradores[currentLine.getReg1()()]);
-
-                                pcb.registradores[currentLine.getReg1()()] = Integer.parseInt(logicalResult);
+                            if (pcb.getRegisters().get(currentLine.getReg1()) == 0 || pcb.getRegisters().get(currentLine.getReg1()) == 1) {
+                                logicalResult = currentLine.getParameter() == 1 ||
+                                        pcb.getRegisters().get(currentLine.getReg1()) == 1;
+                                pcb.getRegisters().put(currentLine.getReg1(), logicalResult ? 1 : 0);
                             } else {
                                 throw new Exception("O registrador não contém um valor lógico válido");
                             }
@@ -242,13 +242,12 @@ public class CPU {
                         // faz a operaçao: rx = rx OR k
                         // OR rx,k
                         case "ORI":
-                            if (new int[]{0, 1}.Contains(pcb.registradores[currentLine.getReg1()()])) {
-                                logicalResult = Convert.ToBoolean(currentLine.parameter) ||
-                                        Convert.ToBoolean(pcb.registradores[currentLine.getReg1()()]);
-
-                                pcb.registradores[currentLine.getReg1()()] = Integer.parseInt(logicalResult);
+                            if (pcb.getRegisters().get(currentLine.getReg1()) == 0 || pcb.getRegisters().get(currentLine.getReg1()) == 1) {
+                                logicalResult = currentLine.getParameter() == 1 ||
+                                        pcb.getRegisters().get(currentLine.getReg1()) == 1;
+                                pcb.getRegisters().put(currentLine.getReg1(), logicalResult ? 1 : 0);
                             } else {
-                                throw new ArgumentException("O registrador não contém um valor lógico válido");
+                                throw new Exception("O registrador não contém um valor lógico válido");
                             }
 
                             pcb.setPc(pcb.getPc()+1);
@@ -257,25 +256,23 @@ public class CPU {
                         // carrega em rx o dado contido na posiçao de memoria indicada por ry
                         // LDX rx,[ry]
                         case "LDX":
-                            value = currentLine.getReg2().Trim(new char[]{'[', ']'});
-                            memoryPosition = MemoryManager.calculatesMemoryAddress(pcb, pcb.registradores[value]);
+                            value = currentLine.getReg2();
+                            memoryPosition = MemoryManager.calculatesMemoryAddress(pcb, pcb.getRegisters().get(value));
 
-                            pcb.registradores[currentLine.getReg1()()] = MemoryManager.Memoria[memoryPosition].parameter;
-
+                            pcb.getRegisters().put(currentLine.getReg1(), MemoryManager.memory[memoryPosition].getParameter());
                             pcb.setPc(pcb.getPc()+1);
                             break;
 
                         // guarda na posição de memoria rx o dado contido em ry
                         // STX [rx],ry
                         case "STX":
-                            value = currentLine.getReg1()().Trim(new char[]{'[', ']'});
-                            memoryPosition = MemoryManager.calculatesMemoryAddress(pcb, pcb.registradores[value]);
+                            value = currentLine.getReg1();
+                            memoryPosition = MemoryManager.calculatesMemoryAddress(pcb, pcb.getRegisters().get(value));
 
-                            MemoryManager.Memoria[memoryPosition] = new PosicaoDeMemoria
-                        {
-                            OPCode = "DATA",
-                                    parameter = pcb.registradores[currentLine.getReg2()]
-                        } ;
+                            memoryPos = new MemoryPos();
+                            memoryPos.setOpcode("DATA");
+                            memoryPos.setParameter(pcb.getRegisters().get(currentLine.getReg2()));
+                            MemoryManager.memory[memoryPosition] = memoryPos;
 
                             pcb.setPc(pcb.getPc()+1);
                             break;
@@ -283,39 +280,27 @@ public class CPU {
                         // troca os valores dos registradores; r7←r3, r6←r2, r5←r1, r4←r0
                         // SWAP
                         case "SWAP":
-                            pcb.registradores["r4"] = pcb.registradores["r0"];
-
-                            pcb.registradores["r5"] = pcb.registradores["r1"];
-
-                            pcb.registradores["r6"] = pcb.registradores["r2"];
-
-                            pcb.registradores["r7"] = pcb.registradores["r3"];
+                            pcb.getRegisters().put("r4", pcb.getRegisters().get("r0"));
+                            pcb.getRegisters().put("r5", pcb.getRegisters().get("r1"));
+                            pcb.getRegisters().put("r6", pcb.getRegisters().get("r2"));
+                            pcb.getRegisters().put("r7", pcb.getRegisters().get("r3"));
 
                             pcb.setPc(pcb.getPc()+1);
                             break;
 
                         default:
-                            throw new ArgumentException($"Não foi possível encontrar o comando [{currentLine.OPCode}]");
+                            throw new Exception("Não foi possível encontrar o comando " + currentLine.getOpcode());
 
                     }
                 }
             }
-        } catch (AcessoIndevidoException) {
-            RotinaTratamentoFinalizacao.TratamentoAcessoIndevido(pcb);
-        } catch (DivideByZeroException) {
-            RotinaTratamentoFinalizacao.TratamentoDivisaoPorZero(pcb);
+        } catch (ImproperAccessException e) {
+            TreatmentRoutineIO.treatImproperAccess(pcb);
         } catch (Exception ex) {
-            //Caso erro genérico
-            throw new Exception($"Ocorreu um erro ao executar o comando na VM: [{ex.Message}]");
+            throw new Exception(ex.getMessage());
         }
 
-        //System.out.println("indo interromper a CPU");
-
-        //Bloqueando a execução da CPU até que o escalonador libere a CPU
-        //para estar pronta a executar um novo processo
-        CPU.noCPU.waitOne();
-
-        //CPU.noCPU.release(); ???
+        CPU.noCPU.acquire();
     }
-}
+
 }

@@ -20,7 +20,11 @@ public class ReadyQueue {
     }
 
     public static int count() {
-        return readyQueue.size();
+        try {
+            return readyQueue.size();
+        } catch (Exception e) {
+            return 0;
+        }
     }
 
     public static void print() {

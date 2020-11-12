@@ -28,7 +28,7 @@ public class FinishedQueue {
         return finishedQueue.size();
     }
 
-    public static void printFilaDeFinalizados() {
+    public static void print() {
         if (finishedQueue.size() == 0) {
             System.out.println("Não há processos finalizados no momento.");
         } else {

@@ -8,9 +8,9 @@ import pucrs.routines.TreatmentRoutineIO;
 
 import java.util.Scanner;
 
-public class Console {
+public class Console extends Thread {
 
-    public static void ExecutarConsoleIO() {
+    public void run() {
         Scanner in = new Scanner(System.in);
         if (RequestConsoleQueue.count() != 0) {
             RequestIOConsole request = RequestConsoleQueue.remove();
@@ -30,7 +30,7 @@ public class Console {
 
                 System.out.println("Valor salvo com sucesso na memória!");
             } else {
-                int value = MemoryManager.memory[endereco].parameter;
+                int value = MemoryManager.memory[endereco].getParameter();
                 System.out.println("O processo " + request.getProcessID() + "solicitou o valor no endereço de memória " + endereco + "e encontrou o valor " + value);
             }
             TreatmentRoutineIO.treatReturn(request.getProcessID());

@@ -1,13 +1,19 @@
 package pucrs.components;
 
+import pucrs.OpSystem;
 import pucrs.queues.*;
 
 import java.util.Scanner;
 
+import static pucrs.OpSystem.semaforoShell;
+
 public class Shell extends Thread {
-    BlockedIOQueue blockedIOQueue = new BlockedIOQueue();
-    FinishedQueue finishedQueue = new FinishedQueue();
-    ReadyQueue readyQueue = new ReadyQueue();
+
+    private ProcessManager processManager;
+
+    public Shell(ProcessManager processManager) {
+        this.processManager = processManager;
+    }
 
     public void run() {
         while (true) {
@@ -37,27 +43,35 @@ public class Shell extends Thread {
                 case 3:
                 case 4:
                 case 5:
-                    ProcessManager.loadProgram(program);
-                    Thread.sleep(100);
+                    try {
+                        processManager.loadProgram(program);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case 6:
-                    consoleIO = new Thread(new ThreadStart(ConsoleIO.ExecutarConsoleIO));
-                    consoleIO.Start();
-                    semaforoShell.WaitOne();
-                    SistemaOperacional.consoleIO.Interrupt();
+                    Console console = new Console();
+                    console.start();
+                    semaforoShell.tryAcquire();
+                    console.interrupt();
                     break;
 
                 case 7:
-                    readyQueue.print();
+                    ReadyQueue.print();
                     break;
                 case 8:
-                    blockedIOQueue.print();
+                    BlockedIOQueue.print();
                     break;
                 case 9:
-                    finishedQueue.printFilaDeFinalizados();
+                    FinishedQueue.print();
                     break;
                 case 0:
-                    System.Environment.Exit(0);
+                    System.exit(0);
                     return;
                 default:
                     System.out.println("Opção não existe");

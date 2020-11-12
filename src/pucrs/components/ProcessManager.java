@@ -25,33 +25,33 @@ public class ProcessManager {
         memoryManager = new MemoryManager(numeroParticoes);
     }
 
-    public void loadProgram(int programNumber) {
-        String filePath = Environment.CurrentDirectory + @ "\assemblyPrograms\P" + programNumber + ".txt";
+    public void loadProgram(int programNumber) throws Exception {
+        String filePath = "programs/P" + programNumber + ".txt";
 
-        int particao = randomPartition();
+        int particao = getRandomPartition();
 
-        MemoryManager.readFile(filePath, particao);
+        memoryManager.readFile(filePath, particao);
 
         count++;
         String processID = "P" + count;
         createPCB(processID, particao);
     }
 
-    public int randomPartition() {
-        if (MemoryManager.isFullMemory()) {
-            throw new StackOverflowException("Impossível alocar mais processos na memória pois todas partições já estão alocadas. Encerrando execução da VM");
+    public int getRandomPartition() throws Exception {
+        if (memoryManager.isFullMemory()) {
+            throw new Exception("Impossível alocar mais processos na memória pois todas partições já estão alocadas. Encerrando execução da VM");
         }
 
         Random r = new Random();
 
-        int particaoAleatoria = r.nextInt(MemoryManager.getPartitionsNumber());
+        int randomPartition = r.nextInt(memoryManager.getPartitionsNumber());
 
         // enquanto a partição aleatoria estiver ocupada, procurar uma próxima aleatoria
-        while (!MemoryManager.isFreePartition(particaoAleatoria)) {
-            particaoAleatoria = r.nextInt(MemoryManager.getPartitionsNumber());
+        while (!memoryManager.isFreePartition(randomPartition)) {
+            randomPartition = r.nextInt(memoryManager.getPartitionsNumber());
         }
 
-        return particaoAleatoria;
+        return randomPartition;
     }
 
     public void createPCB(String processID, int particao) {
@@ -60,14 +60,13 @@ public class ProcessManager {
         int offSet;
         int enderecoMax;
 
-        offSet = MemoryManager.calculatesOffset(particao);
+        offSet = memoryManager.calculatesOffset(particao);
         pcb.setPc(offSet); //AMBOS RECEBEM OFFSET ???
         pcb.setOffSet(offSet);
 
-        enderecoMax = MemoryManager.calculatesMaxAddress(particao);
+        enderecoMax = memoryManager.calculatesMaxAddress(particao);
         pcb.setLimitAdress(enderecoMax);
 
         ReadyQueue.add(pcb);
     }
-}
 }

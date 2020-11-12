@@ -13,7 +13,13 @@ public class Scheduler extends Thread {
         while (true) {
             if (ReadyQueue.count() != 0) {
                 ProcessControlBlock pcb = ReadyQueue.remove();
-                Thread cpuProcess = new Thread(() -> CPU.ExecutarCPU(pcb));
+                Thread cpuProcess = new Thread(() -> {
+                    try {
+                        CPU.execute(pcb);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
                 try {
                     Thread.sleep(2000);
                 } catch (InterruptedException e) {

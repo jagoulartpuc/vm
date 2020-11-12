@@ -18,7 +18,7 @@ public class MemoryManager {
 
     private int MAX_MEMORY_ALLOWED = 8;
 
-    private Partition[] partitions;
+    private static Partition[] partitions;
 
     int partitionsNumber;
 
@@ -26,16 +26,9 @@ public class MemoryManager {
 
     public static MemoryPos[] memory;
 
-    public Partition[] getPartitions() {
-        return this.partitions;
-    }
 
     public int getPartitionsNumber() {
         return this.partitionsNumber;
-    }
-
-    public void setPartitionsNumber(int partitionsNumber) {
-        this.partitionsNumber = partitionsNumber;
     }
 
     public int getAllocatedPartitions() {
@@ -146,7 +139,7 @@ public class MemoryManager {
         }
     }
 
-    public void deallocatePartition(int partition, int offset, int limitAddress) {
+    public static void deallocatePartition(int partition, int offset, int limitAddress) {
         partitions[partition].status = Partition.Status.DEALLOCATED;
 
         for (int i = offset; i <= limitAddress; i++) {

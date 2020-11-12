@@ -29,8 +29,7 @@ public class TreatmentRoutineIO {
         ReadyQueue.add(pcb);
     }
 
-    public void treatTimerInterruption(ProcessControlBlock pcb) {
-        //Decidindo se o processo volta pra fila
+    public static void treatTimerInterruption(ProcessControlBlock pcb) {
         if (pcb.getState() == ProcessControlBlock.State.WAITING) {
             ReadyQueue.add(pcb);
             System.out.println("Voltou pra fila de prontos.");

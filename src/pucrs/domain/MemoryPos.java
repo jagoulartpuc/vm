@@ -1,10 +1,10 @@
 package pucrs.domain;
 
 public class MemoryPos {
-    public String opCode;
-    public String reg1;
-    public String reg2;
-    public int parameter;
+    private String opCode;
+    private String reg1;
+    private String reg2;
+    private int parameter;
 
     public String getOpcode() {
         return this.opCode;

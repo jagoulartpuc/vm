@@ -5,11 +5,7 @@ import pucrs.domain.RequestIOConsole;
 import java.util.*;
 
 public class RequestConsoleQueue {
-    private static Queue<RequestIOConsole> requestQueue;
-
-    public RequestConsoleQueue() {
-        requestQueue = new LinkedList<>();
-    }
+    private static Queue<RequestIOConsole> requestQueue = new LinkedList<>();
 
     public static void add(RequestIOConsole request) {
         requestQueue.add(request);

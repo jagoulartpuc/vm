@@ -39,14 +39,13 @@ public class ProcessManager {
 
     public int getRandomPartition() throws Exception {
         if (memoryManager.isFullMemory()) {
-            throw new Exception("Impossível alocar mais processos na memória pois todas partições já estão alocadas. Encerrando execução da VM");
+            throw new Exception("Impossível alocar mais processos na memória pois todas partições já estão alocadas.");
         }
 
         Random r = new Random();
 
         int randomPartition = r.nextInt(memoryManager.getPartitionsNumber());
 
-        // enquanto a partição aleatoria estiver ocupada, procurar uma próxima aleatoria
         while (!memoryManager.isFreePartition(randomPartition)) {
             randomPartition = r.nextInt(memoryManager.getPartitionsNumber());
         }
@@ -61,12 +60,46 @@ public class ProcessManager {
         int enderecoMax;
 
         offSet = memoryManager.calculatesOffset(particao);
-        pcb.setPc(offSet); //AMBOS RECEBEM OFFSET ???
+        pcb.setPc(offSet);
         pcb.setOffSet(offSet);
 
         enderecoMax = memoryManager.calculatesMaxAddress(particao);
         pcb.setLimitAdress(enderecoMax);
 
         ReadyQueue.add(pcb);
+
+        if (CPU.pcb == null) {
+            if (ReadyQueue.count() == 1) {
+                Scheduler.semaphore.release();
+            } else {
+                if (ReadyQueue.count() == 1 && !(CPU.pcb.getState().equals(ProcessControlBlock.State.RUNNING))) {
+                    Scheduler.semaphore.release();
+                }
+            }
+        }
+    }
+
+
+
+    public static void printRegistersAndMemory(ProcessControlBlock pcb) {
+        System.out.println("--------------------------------------------");
+        System.out.println("DADOS DO PROCESSO:" + pcb.getProcessID());
+
+        System.out.println("Valores finais dos registradores:");
+
+        for (String key: pcb.getRegisters().keySet()) {
+            System.out.println("Registrador " + key  + ": " + pcb.getRegisters().get(key));
+        }
+
+        System.out.println("--------------------------------------------");
+        System.out.println("Estado final das posições de memória da particao");
+
+        for (int i = pcb.getOffSet(); i < pcb.getLimitAdress(); i++) {
+            if (MemoryManager.memory[i] != null) {
+                System.out.println("Posição de memória " + i);
+                System.out.println(MemoryManager.memory[i].toString());
+            }
+        }
+        System.out.println("--------------------------------------------");
     }
 }

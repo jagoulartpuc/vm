@@ -5,11 +5,7 @@ import pucrs.domain.ProcessControlBlock;
 import java.util.*;
 
 public class BlockedIOQueue {
-    private static Queue<ProcessControlBlock> blokedQueue;
-
-    public BlockedIOQueue() {
-        blokedQueue = new LinkedList<>();
-    }
+    private static Queue<ProcessControlBlock> blokedQueue  = new LinkedList<>();
 
     public static void add(ProcessControlBlock pcb) {
         blokedQueue.add(pcb);

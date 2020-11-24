@@ -4,10 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ProcessControlBlock {
+
     private Map<String, Integer> registers;
     private String processID;
     private State state;
-    private int pc;
+    private int pc = 0;
     private int offSet;
     private int limitAdress;
     private int actualPartition;
@@ -29,8 +30,7 @@ public class ProcessControlBlock {
         this.actualPartition = actualPartition;
     }
 
-    public enum State
-    {
+    public enum State {
         READY,
         RUNNING,
         WAITING,
@@ -65,6 +65,10 @@ public class ProcessControlBlock {
 
     public int getPc() {
         return pc;
+    }
+
+    public void incrementPc() {
+        pc++;
     }
 
     public void setPc(int pc) {

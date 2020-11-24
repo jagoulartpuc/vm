@@ -2,13 +2,10 @@ package pucrs.queues;
 
 import pucrs.domain.ProcessControlBlock;
 import java.util.*;
+import java.util.concurrent.Semaphore;
 
 public class ReadyQueue {
-    private static Queue<ProcessControlBlock> readyQueue;
-
-    public ReadyQueue() {
-        readyQueue = new LinkedList<>();
-    }
+    private static Queue<ProcessControlBlock> readyQueue = new LinkedList<>();
 
     public static void add(ProcessControlBlock pcb) {
         readyQueue.add(pcb);
@@ -23,8 +20,9 @@ public class ReadyQueue {
         try {
             return readyQueue.size();
         } catch (Exception e) {
-            return 0;
+            e.printStackTrace();
         }
+        return 0;
     }
 
     public static void print() {

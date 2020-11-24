@@ -9,11 +9,7 @@ import java.util.Queue;
 
 public class FinishedQueue {
 
-    private static Queue<ProcessControlBlock> finishedQueue;
-
-    public FinishedQueue() {
-        finishedQueue = new LinkedList<>();
-    }
+    private static Queue<ProcessControlBlock> finishedQueue = new LinkedList<>();
 
     public static void add(ProcessControlBlock pcb) {
         finishedQueue.add(pcb);

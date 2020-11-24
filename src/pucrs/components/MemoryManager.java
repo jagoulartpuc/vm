@@ -11,43 +11,34 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Scanner;
 
+import static pucrs.util.Util.tryParseInt;
+
 public class MemoryManager {
-    private int MAX_MEMORY_SIZE = 1024;
-
-    private int MIN_MEMORY_SIZE = 4;
-
-    private int MAX_MEMORY_ALLOWED = 8;
 
     private static Partition[] partitions;
 
-    int partitionsNumber;
+    private int partitionsNumber;
 
     private int allocatedPartitions;
 
     public static MemoryPos[] memory;
 
-
     public int getPartitionsNumber() {
         return this.partitionsNumber;
     }
 
-    public int getAllocatedPartitions() {
-        return this.allocatedPartitions;
-    }
-
-    public void setAllocatedPartitions(int allocatedPartitions) {
-        this.allocatedPartitions = allocatedPartitions;
-    }
 
     public MemoryManager(int partitionsNumber) throws Exception {
         if (partitionsNumber % 2 != 0) {
             throw new Exception("Não é possivel criar um número impar de partições, use apenas números 2^n. Encerrando execução");
         }
 
+        int MAX_MEMORY_SIZE = 1024;
         if (partitionsNumber > MAX_MEMORY_SIZE) {
             throw new Exception("O tamanho máximo de partições permitido para uma CPU é de " + MAX_MEMORY_SIZE + ". Encerrando execução.");
         }
 
+        int MIN_MEMORY_SIZE = 4;
         if (partitionsNumber < MIN_MEMORY_SIZE) {
             throw new Exception("O tamanho mínimo de partições permitido para uma CPU é de " + MIN_MEMORY_SIZE + ". Encerrando execução.");
         }
@@ -114,9 +105,10 @@ public class MemoryManager {
                     MemoryPos memoryPos = new MemoryPos();
                     memoryPos.setOpcode(command);
                     memory[counter + offsetParticao] = memoryPos;
+                    continue;
                 }
 
-                String[] parameters = dataContent[1].replace(" ", "").split(",");
+                String[] parameters = dataContent[1].split(",");
 
                 if (command.equals("JMP") || command.equals("JMPI")) {
                     MemoryPos memoryPos = new MemoryPos();
@@ -144,14 +136,6 @@ public class MemoryManager {
 
         for (int i = offset; i <= limitAddress; i++) {
             memory[offset] = new MemoryPos();
-        }
-    }
-
-    public int tryParseInt(String value) {
-        try {
-            return Integer.parseInt(value);
-        } catch (NumberFormatException e) {
-            return 0;
         }
     }
 

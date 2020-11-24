@@ -1,6 +1,7 @@
 package pucrs.routines;
 
 import pucrs.components.MemoryManager;
+import pucrs.components.ProcessManager;
 import pucrs.components.Scheduler;
 import pucrs.domain.ProcessControlBlock;
 import pucrs.domain.RequestIOConsole;
@@ -36,7 +37,6 @@ public class TreatmentRoutineIO {
             ReadyQueue.add(pcb);
             System.out.println("Voltou pra fila de prontos.");
         }
-
         Scheduler.semaphore.release();
     }
 
@@ -58,6 +58,7 @@ public class TreatmentRoutineIO {
 
         FinishedQueue.add(pcb);
         MemoryManager.deallocatePartition(pcb.getActualPartition(), pcb.getOffSet(), pcb.getLimitAdress());
+        ProcessManager.printRegistersAndMemory(pcb);
         Scheduler.semaphore.release();
     }
 }

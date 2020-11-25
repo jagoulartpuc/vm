@@ -33,10 +33,9 @@ public class TreatmentRoutineIO {
     }
 
     public static void treatTimerInterruption(ProcessControlBlock pcb) {
-        if (pcb.getState() == ProcessControlBlock.State.WAITING) {
-            ReadyQueue.add(pcb);
-            System.out.println("Voltou pra fila de prontos.");
-        }
+        pcb.setState(ProcessControlBlock.State.READY);
+        System.out.println("Foi interrompido e voltou pra fila de prontos.");
+        ReadyQueue.add(pcb);
         Scheduler.semaphore.release();
     }
 
@@ -49,16 +48,6 @@ public class TreatmentRoutineIO {
 
         MemoryManager.deallocatePartition(pcb.getActualPartition(), pcb.getOffSet(), pcb.getLimitAdress());
 
-        Scheduler.semaphore.release();
-    }
-
-    public static void finishProcess(ProcessControlBlock pcb) {
-        pcb.setState(ProcessControlBlock.State.FINISHED);
-        System.out.println("Terminou de executar o processo " + pcb.getProcessID());
-
-        FinishedQueue.add(pcb);
-        MemoryManager.deallocatePartition(pcb.getActualPartition(), pcb.getOffSet(), pcb.getLimitAdress());
-        ProcessManager.printRegistersAndMemory(pcb);
         Scheduler.semaphore.release();
     }
 }

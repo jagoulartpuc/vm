@@ -14,42 +14,52 @@ public class CPU extends Thread {
 
     public static Semaphore semaphoreCPU = new Semaphore(0);
     public static ProcessControlBlock pcb;
+    private static int commandsCount = 0;
+    private String value;
+    private boolean logicalResult;
+    private int memoryPosition, reg;
+    private MemoryPos currentLine;
+    private MemoryPos memoryPos;
+    private final int TIME_FACT = 30;
+
 
     public static void setPcb(ProcessControlBlock pcb) {
+        commandsCount = 0;
         CPU.pcb = pcb;
     }
 
     public void run() {
-        try {
-            CPU.semaphoreCPU.acquire();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        while (true) {
+            try {
+                CPU.semaphoreCPU.acquire();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            pcb.setState(ProcessControlBlock.State.RUNNING);
+            System.out.println("Process Id: " + pcb.getProcessID());
+            System.out.println("State: " + pcb.getState());
+            try {
+                execute();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
-        int commandsCount = 0;
-        pcb.setState(ProcessControlBlock.State.RUNNING);
-        System.out.println("Process Id: " + pcb.getProcessID());
-        System.out.println("State: " + pcb.getState());
+    }
 
-        String value;
-        boolean logicalResult;
-        int memoryPosition, reg;
-        MemoryPos currentLine = MemoryManager.memory[pcb.getPc()];
-        MemoryPos memoryPos;
-        final int TIME_FACT = 30;
-
+    public void execute()  {
         try {
             while (true) {
-                //System.out.println(currentLine);
+                currentLine = MemoryManager.memory[pcb.getPc()];
+
                 //Timer CPU
                 if (commandsCount == TIME_FACT) {
-                    pcb.setState(ProcessControlBlock.State.WAITING);
                     TreatmentRoutineIO.treatTimerInterruption(pcb);
                     break;
                 }
 
                 if (currentLine.getOpcode().equals("STOP")) {
                     System.out.println("Entrando na rotina de finalização");
-                    TreatmentRoutineIO.finishProcess(pcb);
+                    ProcessManager.finishProcess(pcb);
                     break;
                 }
 
@@ -77,6 +87,7 @@ public class CPU extends Thread {
                 } else {
                     currentLine = MemoryManager.memory[pcb.getPc()];
                     commandsCount++;
+                    //System.out.println(commandsCount);
 
                     switch (currentLine.getOpcode()) {
                         case "JMP":

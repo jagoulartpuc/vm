@@ -16,8 +16,10 @@ public class Scheduler extends Thread {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            //System.out.println("liberou");
             if (ReadyQueue.count() != 0) {
                 ProcessControlBlock pcb = ReadyQueue.remove();
+                //System.out.println(pcb.getProcessID());
                 CPU.setPcb(pcb);
                 CPU.semaphoreCPU.release();
             }

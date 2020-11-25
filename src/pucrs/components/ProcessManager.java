@@ -1,6 +1,7 @@
 package pucrs.components;
 
 import pucrs.domain.ProcessControlBlock;
+import pucrs.queues.FinishedQueue;
 import pucrs.queues.ReadyQueue;
 
 import java.util.Random;
@@ -10,6 +11,7 @@ public class ProcessManager {
     private final int MIN_PROCESS_ALLOWED = 4;
     private final int MAX_PROCESS_ALLOWED = 8;
     private MemoryManager memoryManager;
+    private static int alives = 0;
 
     private int count = 0;
 
@@ -65,21 +67,23 @@ public class ProcessManager {
 
         enderecoMax = memoryManager.calculatesMaxAddress(particao);
         pcb.setLimitAdress(enderecoMax);
-
+        alives++;
         ReadyQueue.add(pcb);
 
-        if (CPU.pcb == null) {
-            if (ReadyQueue.count() == 1) {
-                Scheduler.semaphore.release();
-            } else {
-                if (ReadyQueue.count() == 1 && !(CPU.pcb.getState().equals(ProcessControlBlock.State.RUNNING))) {
-                    Scheduler.semaphore.release();
-                }
-            }
+        if (alives == 1) {
+            Scheduler.semaphore.release();
         }
     }
 
-
+    public static void finishProcess(ProcessControlBlock pcb) {
+        pcb.setState(ProcessControlBlock.State.FINISHED);
+        System.out.println("Terminou de executar o processo " + pcb.getProcessID());
+        alives--;
+        FinishedQueue.add(pcb);
+        MemoryManager.deallocatePartition(pcb.getActualPartition(), pcb.getOffSet(), pcb.getLimitAdress());
+        ProcessManager.printRegistersAndMemory(pcb);
+        Scheduler.semaphore.release();
+    }
 
     public static void printRegistersAndMemory(ProcessControlBlock pcb) {
         System.out.println("--------------------------------------------");

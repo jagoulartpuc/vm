@@ -95,7 +95,4 @@ public class ProcessControlBlock {
         return actualPartition;
     }
 
-    public void setActualPartition(int actualPartition) {
-        this.actualPartition = actualPartition;
-    }
 }

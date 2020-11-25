@@ -3,17 +3,18 @@ package pucrs.queues;
 import pucrs.domain.ProcessControlBlock;
 
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class BlockedIOQueue {
-    private static Queue<ProcessControlBlock> blokedQueue  = new LinkedList<>();
+    private static Queue<ProcessControlBlock> blokedQueue  = new LinkedBlockingQueue<>();
 
-    public static void add(ProcessControlBlock pcb) {
+    public synchronized static void add(ProcessControlBlock pcb) {
         blokedQueue.add(pcb);
 
         System.out.println("Adicionou o processo " + pcb.getProcessID() + " a fila de bloqueados por IO.");
     }
 
-    public static ProcessControlBlock remove(String pcbID) {
+    public synchronized static ProcessControlBlock remove(String pcbID) {
         try {
             for(ProcessControlBlock pcb : blokedQueue) {
                 if(pcb.getProcessID() == pcbID) {
@@ -28,11 +29,11 @@ public class BlockedIOQueue {
         return null;
     }
 
-    public static int count() {
+    public synchronized static int count() {
         return blokedQueue.size();
     }
 
-    public static void print() {
+    public synchronized static void print() {
         if (blokedQueue.size() == 0) {
             System.out.println("Não há processos bloqueados por IO no momento.");
         } else {

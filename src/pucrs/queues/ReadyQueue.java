@@ -2,21 +2,22 @@ package pucrs.queues;
 
 import pucrs.domain.ProcessControlBlock;
 import java.util.*;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 
 public class ReadyQueue {
-    private static Queue<ProcessControlBlock> readyQueue = new LinkedList<>();
+    private static Queue<ProcessControlBlock> readyQueue = new LinkedBlockingQueue<>();
 
-    public static void add(ProcessControlBlock pcb) {
+    public synchronized static void add(ProcessControlBlock pcb) {
         readyQueue.add(pcb);
         System.out.println("Adicionou o processo " + pcb.getProcessID() + " a fila de prontos com status " + pcb.getState());
     }
 
-    public static ProcessControlBlock remove() {
+    public synchronized static ProcessControlBlock remove() {
         return readyQueue.remove();
     }
 
-    public static int count() {
+    public synchronized static int count() {
         try {
             return readyQueue.size();
         } catch (Exception e) {
@@ -25,7 +26,7 @@ public class ReadyQueue {
         return 0;
     }
 
-    public static void print() {
+    public synchronized static void print() {
         if (readyQueue.size() == 0) {
             System.out.println("Não há processos prontos no momento.");
         } else {

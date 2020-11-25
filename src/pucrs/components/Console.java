@@ -18,7 +18,7 @@ public class Console extends Thread {
             int adress = request.getAdress();
 
             if (request.getIOOperation() == RequestIOConsole.IOType.READ) {
-                System.out.println("O processo" + request.getProcessID() + "está solicitando leitura de um valor que será salvo na posição de memória " + adress);
+                System.out.println("O processo " + request.getProcessID() + " está solicitando leitura de um valor que será salvo na posição de memória " + adress);
                 System.out.println("Digite o valor para ser salvo:");
 
                 int value = Integer.parseInt(in.next());
